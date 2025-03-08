@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TorRelayScannerCS</name>
+    </assembly>
+    <members>
+        <member name="M:Tor_relay_scanner_CS.Program.Main(System.UInt32,System.UInt32,System.String,System.UInt32,System.String,System.Boolean,System.String,System.String[],System.UInt32[],System.String,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Automatically retrieves information about tor relays and scans them for reachability
+            </summary>
+            <param name="n">The number of concurrent relays tested</param>
+            <param name="g">Test until at least this number of working relays are found</param>
+            <param name="c">Include only following countries for testing, exclude by adding '-'. Example: nl,de (only netherlands and germany) Example exclude: -nl (not netherlands)</param>
+            <param name="timeout">Socket connection timeout in milliseconds</param>
+            <param name="o">Output reachable relays to file</param>
+            <param name="torrc">Output reachable relays in torrc format (with "Bridge" prefix)</param>
+            <param name="proxy">Set proxy for onionoo information download. Format: http://user:pass@host:port; socks5h://user:pass@host:port</param>
+            <param name="url">Preferred alternative URL for onionoo relay list. Could be used multiple times.</param>
+            <param name="p">Scan for relays running on specified port number. Could be used multiple times.</param>
+            <param name="browserLocation">Tor browser executable location</param>
+            <param name="notInstallBridges">Not install bridges into Tor browser</param>
+            <param name="notStartBrowser">Not launch browser after scanning</param>
+            <param name="useOutdated">Use already existing outdated relay info</param>
+        </member>
+        <member name="T:Tor_relay_scanner_CS.Relays.RelayDistributor">
+            Please be patient
+            I have autism
+        </member>
+        <member name="T:Tor_relay_scanner_CS.Relays.RelayInformation">
+             Most of the fields are completely not necessary to load into memory
+            
+        </member>
+    </members>
+</doc>
