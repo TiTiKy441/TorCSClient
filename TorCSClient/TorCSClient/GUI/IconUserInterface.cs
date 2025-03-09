@@ -259,9 +259,6 @@ namespace TorCSClient.GUI
             TorService.Instance.StopTor(true); // Forced shutdown
             TorService.Instance.WaitForEnd();
 
-            Settings.Instance.Close();
-            TorControl.Instance.Close();
-
             Application.Exit();
             Environment.Exit(0); // Dont touch...
         }
