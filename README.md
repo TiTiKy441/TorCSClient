@@ -42,9 +42,9 @@ Settings - opens/closes torifier settings
 
 Panel for controlling tor proxy parameters.
 
-Provides functionality for adding bridges (also supports adding bridges from a url or a local file, just write the file path or the URL in the bridges textboc and it will fetch them automatically). 
+Provides functionality for adding bridges (also supports adding bridges from a url or a local file, just write the file path or the URL in the bridges textbox and it will fetch them automatically). 
 
-Filter - every N seconds application check whenever the amount of bridges is sufficient (Running bridges count) and reloads tor only with those bridges.
+Filter - every N seconds application checks whenever the amount of bridges is sufficient (>= Running bridges count) and reloads tor only with those bridges.
 
 ## TorRelayScannerCS
 
@@ -62,7 +62,7 @@ In this mode application forces the system to use Tor's DNS server and to use To
 
 ### Selected apps 
 
-In this mode application starts a [ProxiFyre](https://github.com/wiresock/proxifyre) process which proxifies all of the desired applications through tor. By uncheking the boxes next to the application icon, you can exclude applications from the proxification without removing them from the list.
+In this mode application starts a [ProxiFyre](https://github.com/wiresock/proxifyre) process which proxifies all of the desired applications through tor. By uncheking the box next to the application icon, you can exclude a specified application from the proxification without removing them from the list.
 
 ## Additional info and setup 
 
