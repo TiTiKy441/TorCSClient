@@ -7,7 +7,7 @@ namespace TorCSClient.GUI
     public partial class Settings : Form
     {
 
-        public static Settings Instance;
+        public static Settings Instance { get; private set; }
 
         private static readonly Size IconSize = new(30, 30);
 
@@ -15,8 +15,8 @@ namespace TorCSClient.GUI
 
         public Settings()
         {
-            InitializeComponent();
             Instance = this;
+            InitializeComponent();
             WindowState = FormWindowState.Minimized;
             MaximizeBox = false;
             //ControlBox = false;
@@ -38,9 +38,13 @@ namespace TorCSClient.GUI
                 AddAppToProxiFyreList(exe);
             }
             proxifyre_apps.EndUpdate();
-            proxifyre_apps.Visible = true;
-            FormClosing += Settings_FormClosing;
             ProxiFyreService.Instance.OnStartRequested += ProxiFyre_OnStartRequested;
+        }
+
+        private void Settings_FormClosed(object? sender, FormClosedEventArgs e)
+        {
+            UpdateProxiFyreList(false, false);
+            ProxiFyreService.Instance.OnStartRequested -= ProxiFyre_OnStartRequested;
         }
 
         private void ProxiFyre_OnStartRequested(object? sender, EventArgs e)
@@ -53,11 +57,10 @@ namespace TorCSClient.GUI
 
         private void Settings_FormClosing(object? sender, FormClosingEventArgs e)
         {
-            //ProxiFyreService.Instance.OnStartRequested -= ProxiFyre_OnStartRequested;
+            if (IconUserInterface.Instance.ExitRequestedFlag) return;
             e.Cancel = true;
             Instance.Visible = false;
             Instance.WindowState = FormWindowState.Minimized;
-            UpdateProxiFyreList(false, false);
         }
 
         private void proxifyre_add_button_Click(object sender, EventArgs e)
@@ -102,17 +105,7 @@ namespace TorCSClient.GUI
         private void AddAppToProxiFyreList(string pathToApp)
         {
             Bitmap? iconOrig = Icon.ExtractAssociatedIcon(pathToApp)?.ToBitmap();
-            Bitmap iconComplete;
-            if (iconOrig != null)
-            {
-                iconComplete = new Bitmap(iconOrig, IconSize);
-            }
-            else
-            {
-                iconComplete = WhiteImage;
-                using Graphics gr = Graphics.FromImage(iconComplete);
-                gr.Clear(Color.White);
-            }
+            Bitmap iconComplete = iconOrig == null ? WhiteImage : new Bitmap(iconOrig, IconSize);
             proxifyre_apps.SmallImageList?.Images.Add(iconComplete);
             int? iconIndex = proxifyre_apps.SmallImageList?.Images.Count - 1;
             string file = Path.GetFileName(pathToApp);
@@ -122,7 +115,7 @@ namespace TorCSClient.GUI
             proxifyre_apps.Items.Add(listViewItem);
         }
 
-        private void UpdateProxiFyreList(bool check = true, bool reloadTor = true)
+        public void UpdateProxiFyreList(bool check = true, bool reloadTor = true)
         {
             string[] oldApps = ProxiFyreService.Instance.GetApps();
             string[] newApps = proxifyre_apps.Items.Cast<ListViewItem>().Where(x => (x != null && (!check || x.Checked))).Select(x => x.SubItems[2].Text).ToArray();

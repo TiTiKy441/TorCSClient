@@ -48,7 +48,7 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
             List<StaticFilter> filters = new(2)
             {
 
-                // ARP PASS filter
+                // ARP pass filter
                 new(
                 _adapter.Handle,
                 PACKET_FLAG.PACKET_FLAG_ON_SEND_RECEIVE,
@@ -163,7 +163,7 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
             return _ndisapi.ResetPacketFilterTable() & base.Stop();
         }
 
-        public override void Dispose()
+        public new void Dispose()
         {
             ThrowIfDisposed();
             _ndisapi.ResetPacketFilterTable();

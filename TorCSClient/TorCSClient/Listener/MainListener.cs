@@ -33,7 +33,7 @@ namespace TorCSClient.Listener
         private const string subkey = "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings";
         private const string keyName = userRoot + "\\" + subkey;
 
-        private static NetworkPacketInterceptor _firewall;
+        private static NetworkIPFilter _firewall;
 
         public static void Initialize()
         {
@@ -46,12 +46,21 @@ namespace TorCSClient.Listener
         {
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
             TorService.Instance.OnStatusChange += TorService_OnStatusChange;
+            ProxiFyreService.Instance.OnExit += ProxiFyre_OnExit;
+        }
+
+        private static void ProxiFyre_OnExit(object? sender, EventArgs e)
+        {
+            // Since ProxiFyre uses ndisapi, if it's terminated ungracefully, it wil leave the network adapter in Tunneling state
+            // By resetting the main adapter, we are making sure that it's okay
+            NdisApiUser.ResetMainAdapter();
         }
 
         public static void Unhook()
         {
             AppDomain.CurrentDomain.ProcessExit -= CurrentDomain_ProcessExit;
             TorService.Instance.OnStatusChange -= TorService_OnStatusChange;
+            ProxiFyreService.Instance.OnExit -= ProxiFyre_OnExit;
         }
 
         private static void CurrentDomain_ProcessExit(object? sender, EventArgs e)
@@ -68,23 +77,24 @@ namespace TorCSClient.Listener
 
         private static void TorService_OnStatusChange(object? sender, EventArgs e)
         {
-            NetworkIPFilter ipFilter = (NetworkIPFilter)_firewall;
             switch (TorService.Instance.Status)
             {
                 case ProxyStatus.Disabled:
                     EnableTor(false);
+                    Utils.SetDNS(Configuration.Instance.Get("DefaultDNS").First());
                     break;
 
                 case ProxyStatus.Starting:
                     EnableTor(false);
                     // We allow DNS requests so that when we get Tor's addresses in use, we can resolve hostnames
                     // This is needed for webtunnel bridges
-                    ipFilter.ChangeFilterParams(new IPAddress[] { Utils.GetDnsAddress() });
-                    ipFilter.ChangeFilterParams(TorService.Instance.GetUsedAddresses(true).ToArray()); 
+                    //Utils.SetDNS(Configuration.Instance.Get("DefaultDNS").First());
+                    _firewall.ChangeFilterParams(new IPAddress[] { Utils.GetDnsAddress() });
+                    _firewall.ChangeFilterParams(TorService.Instance.GetUsedAddresses(true).ToArray()); 
                     break;
 
                 case ProxyStatus.Running:
-                    ipFilter.ChangeFilterParams(TorService.Instance.GetUsedAddresses(true).ToArray());
+                    _firewall.ChangeFilterParams(TorService.Instance.GetUsedAddresses(true).ToArray());
                     if (Configuration.Instance.GetFlag("StartEnabled")) EnableTor(true);
                     break;
             }
@@ -99,7 +109,7 @@ namespace TorCSClient.Listener
                 Utils.ReinitHttpClient("socks5://127.0.0.1:" + TorService.Instance.GetConfigurationValue("SocksPort").First());
 
                 if (Configuration.Instance.GetInt("NetworkFilterType") == 1) ProxiFyreService.Instance.Start();
-                if (Configuration.Instance.GetInt("NetworkFilterType") == 0 && !_firewall.Capturing)
+                if (Configuration.Instance.GetInt("NetworkFilterType") == 0 && _firewall != null && !_firewall.Capturing)
                 {
                     if (!_firewall.Start()) return false;
                 }
@@ -113,16 +123,18 @@ namespace TorCSClient.Listener
                 Utils.ReinitHttpClient(null);
 
                 ProxiFyreService.Instance.Stop();
-                if (_firewall != null && _firewall.Capturing && !Configuration.Instance.GetFlag("ConstantFirewall") && !_firewall.Stop()) return false;
+                if (_firewall != null && _firewall.Capturing && !Configuration.Instance.GetFlag("ConstantFirewall"))
+                { 
+                    if (!_firewall.Stop()) return false; 
+                }
                 IsEnabled = false;
                 return true;
             }
         }
 
-
-        public static void EnableProxy(bool enabled)
+        public static void EnableProxy(bool enable)
         {
-            if (enabled)
+            if (enable)
             {
                 Registry.SetValue(keyName, "ProxyServer", "socks=127.0.0.1:" + TorService.Instance.GetConfigurationValue("SocksPort").First());
                 Registry.SetValue(keyName, "ProxyEnable", 1, RegistryValueKind.DWord);

@@ -138,6 +138,8 @@
             Name = "Settings";
             ShowInTaskbar = false;
             Text = "Settings";
+            FormClosing += Settings_FormClosing;
+            FormClosed += Settings_FormClosed;
             ResumeLayout(false);
             PerformLayout();
         }

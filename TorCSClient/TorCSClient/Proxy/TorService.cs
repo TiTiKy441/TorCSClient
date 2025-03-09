@@ -246,7 +246,10 @@ namespace TorCSClient.Proxy
             {
                 //_TorCSClientProcess?.StandardInput.Close();
                 //_TorCSClientProcess?.StandardOutput.Close();
-                _torProcess?.Kill(entireProcessTree: true);
+                if (!_torProcess.CloseMainWindow())
+                {
+                    _torProcess?.Kill(entireProcessTree: true);
+                }
                 //_TorCSClientProcess?.WaitForExit();
             }
             WorkingBridges.Clear();

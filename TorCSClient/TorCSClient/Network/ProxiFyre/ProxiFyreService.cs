@@ -4,6 +4,7 @@ using System.Net;
 using System.Text.Json;
 using TorCSClient.Proxy;
 using TorCSClient.Relays;
+using WinNetworkUtilsCS.Network.WinpkFilter;
 
 namespace TorCSClient.Network.ProxiFyre
 {
@@ -122,7 +123,11 @@ namespace TorCSClient.Network.ProxiFyre
         public void Stop()
         {
             if (!IsRunning) return;
-            _proxiFyreProcess.Kill(entireProcessTree: true);
+            //_proxiFyreProcess.Kill(entireProcessTree: true);
+            if (!_proxiFyreProcess.CloseMainWindow())
+            {
+                _proxiFyreProcess.Kill(true);
+            }
         }
 
         public void UpdateConfig()

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.DirectoryServices.ActiveDirectory;
 using System.Linq.Expressions;
 using TorCSClient.Listener;
@@ -19,15 +20,21 @@ namespace TorCSClient.GUI
         private readonly ToolStripButton tor_control_button;
         private readonly ToolStripButton settings_button;
 
+        public static IconUserInterface Instance { get; private set; }
+
+        public bool ExitRequestedFlag { get; private set; } = false;
+
         public IconUserInterface()
         {
+            Instance = this;
+            InitializeComponent();
+
             Name = "TorCSClient";
             Text = "TorCSClient";
 
             TorService.Instance.OnStartupStatusChange += TorService_OnStartupStatusChange;
             TorService.Instance.OnStatusChange += TorService_OnStatusChange;
 
-            InitializeComponent();
 
             contextMenu = new ContextMenuStrip()
             {
@@ -244,12 +251,16 @@ namespace TorCSClient.GUI
 
         private void ExitButton_Click(object? sender, EventArgs e)
         {
+            ExitRequestedFlag = true;
             use_proxy_button.Checked = false;
             TorService.Instance.OnStartupStatusChange -= TorService_OnStartupStatusChange;
             TorService.Instance.OnStatusChange -= TorService_OnStatusChange;
             TorControl.Instance.UnhookFromTorService();
             TorService.Instance.StopTor(true); // Forced shutdown
             TorService.Instance.WaitForEnd();
+
+            Settings.Instance.Close();
+            TorControl.Instance.Close();
 
             Application.Exit();
             Environment.Exit(0); // Dont touch...

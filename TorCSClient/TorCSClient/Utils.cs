@@ -129,7 +129,7 @@ namespace TorCSClient
 
         public static IPAddress GetDnsAddress()
         {
-            return GetMainInterface().GetIPProperties().DnsAddresses.Last();
+            return GetMainInterface().GetIPProperties().DnsAddresses.First();
         }
 
         public static NetworkInterface[] GetActiveInterfaces()
@@ -137,9 +137,9 @@ namespace TorCSClient
             return NetworkInterface.GetAllNetworkInterfaces().Where(x => x.OperationalStatus == OperationalStatus.Up).ToArray();
         }
 
-        public static void SetDNS(string DnsString)
+        public static void SetDNS(string newDNSServer)
         {
-            string[] Dns = { DnsString, DnsString, DnsString };
+            string[] Dns = { newDNSServer, newDNSServer, newDNSServer };
             NetworkInterface CurrentInterface = GetMainInterface();
             if (CurrentInterface == null) return;
 
@@ -197,8 +197,6 @@ namespace TorCSClient
                     result.Add(ipv6addr);
                 }
             }
-            //result.AddRange(Ipv4AddressSelector.Matches(str).ToList().ConvertAll(x => IPAddress.Parse(x.Value)));
-            //result.AddRange(Ipv6AddressSelector.Matches(str).ToList().ConvertAll(x => IPAddress.Parse(x.Value)));
             if (!resolveUrl) return result.ToArray();
             string[] hostnames = UrlSelector.Matches(str).ToList().ConvertAll(x => x.Value).ToArray();
             foreach (string host in hostnames)

@@ -42,7 +42,6 @@ namespace TorCSClient
             CheckWinPkFilter();
             CheckProxiFyre();
             CheckTorRelayScanner();
-            //PrintNetworkInterfaces();
 
             MainListener.Initialize();
             MainListener.EnableTor(false);

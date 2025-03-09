@@ -1,14 +1,9 @@
 ﻿using NdisApi;
-using PacketDotNet;
-using System.Runtime.InteropServices;
-using System;
 
 namespace WinNetworkUtilsCS.Network.WinpkFilter
 {
-    public class NetworkPacketInterceptor : NdisApiUser, IDisposable, INetworkStatistics
+    public class NetworkPacketInterceptor : NdisApiUser, INetworkStatistics
     {
-
-        protected bool _disposed = false;
 
         public readonly MSTCP_FLAGS Mode;
 
@@ -211,7 +206,7 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
             _cancellationTokenSource = new();
         }
 
-        public virtual void Dispose()
+        public new void Dispose()
         {
             ThrowIfDisposed();
 
@@ -221,19 +216,8 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
             _packetEvent.Dispose();
             _ndisapi.SetPacketEvent(_adapter.Handle, null);
             _ndisapi.SetAdapterMode(_adapter.Handle, 0);
-            _disposed = true;
-            if (!UnregisterUserFromAdapter(_adapter, this))
-            {
-                //? 
-                //we werent able to unregister... it's not a big deal, but?
-                throw new Exception();
-            }
-            GC.SuppressFinalize(this);
-        }
-
-        protected void ThrowIfDisposed()
-        {
-            if (_disposed) throw new ObjectDisposedException(GetType().FullName);
+            UnregisterUserFromAdapter(_adapter, this);
+            base.Dispose();
         }
     }
 }

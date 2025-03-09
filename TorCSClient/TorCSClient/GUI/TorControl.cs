@@ -25,16 +25,7 @@ namespace TorCSClient.GUI
     internal partial class TorControl : Form
     {
 
-        private static TorControl? _instance;
-
-        public static TorControl Instance
-        {
-            get
-            {
-                _instance ??= new TorControl();
-                return _instance;
-            }
-        }
+        public static TorControl Instance { get; private set; }
 
         private readonly System.Windows.Forms.Timer filterTimer = new System.Windows.Forms.Timer();
 
@@ -42,7 +33,7 @@ namespace TorCSClient.GUI
 
         public TorControl()
         {
-            _instance = this;
+            Instance = this;
             InitializeComponent();
             bridge_type_combobox.SelectedIndex = 1;
             WindowState = FormWindowState.Minimized;
@@ -90,6 +81,7 @@ namespace TorCSClient.GUI
 
         private void TorControl_FormClosing(object? sender, FormClosingEventArgs e)
         {
+            if (IconUserInterface.Instance.ExitRequestedFlag) return;
             e.Cancel = true;
             Visible = false;
             WindowState = FormWindowState.Minimized;

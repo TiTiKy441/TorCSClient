@@ -4,16 +4,20 @@ using System.Net.NetworkInformation;
 
 namespace WinNetworkUtilsCS.Network.WinpkFilter
 {
-    public abstract class NdisApiUser
+    public abstract class NdisApiUser : IDisposable
     {
 
         public abstract bool Capturing { get; }
 
         protected NdisApiDotNet _ndisapi = new(null);
 
+        private static readonly NdisApiDotNet ndisapi = new(null);
+
         private readonly static Dictionary<IntPtr, List<NdisApiUser>> _adapterUsers = new();
 
         private static NetworkInterface? _cachedMainNetworkInterface;
+
+        protected bool _disposed = false;
 
         public NdisApiUser()
         {
@@ -22,7 +26,7 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
         }
 
         // Registering user to adapter was made for the purpose of keeping track of the adapter and filters/sniffers/other stuff that uses ndisapi attached to it
-        // If the other ndisapi user is already running on this adapter, we can keep track of that
+        // If the other ndisapi user is already running on this adapter, we can keep track of that and say that adapter is occupied
         protected static void RegisterUserToAdapter(NetworkAdapter adapter, NdisApiUser user)
         {
             if (!_adapterUsers.ContainsKey(adapter.Handle)) _adapterUsers[adapter.Handle] = new();
@@ -43,18 +47,24 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
             return _adapterUsers[adapter.Handle].Any(user => user.Capturing);
         }
 
+        public static bool ResetMainAdapter()
+        {
+            NetworkAdapter mainAdapter = GetActiveAdapter();
+            return (!IsOccupied(mainAdapter)) && ndisapi.ResetPacketFilterTable() & ndisapi.SetAdapterMode(mainAdapter.Handle, 0) & ndisapi.SetPacketEvent(mainAdapter.Handle, null);
+        }
+
         // TODO: REDO
         // I am not sure how would this perform in real world
-        public NetworkAdapter GetActiveAdapter()
+        public static NetworkAdapter GetActiveAdapter()
         {
-            foreach (NetworkAdapter i in _ndisapi.GetTcpipBoundAdaptersInfo().Item2)
+            foreach (NetworkAdapter i in ndisapi.GetTcpipBoundAdaptersInfo().Item2)
             {
                 if (GetMainInterface().GetPhysicalAddress().ToString() == i.CurrentAddress.ToString())
                 {
                     return i;
                 }
             }
-            return _ndisapi.GetTcpipBoundAdaptersInfo().Item2.First();
+            return ndisapi.GetTcpipBoundAdaptersInfo().Item2.First();
         }
 
         public static NetworkInterface GetMainInterface()
@@ -73,6 +83,17 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
         public static IPAddress GetMainInterfaceAddress()
         {
             return GetMainInterface().GetIPProperties().UnicastAddresses.Last().Address;
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            GC.SuppressFinalize(this);
+        }
+
+        protected void ThrowIfDisposed()
+        {
+            if (_disposed) throw new ObjectDisposedException(GetType().FullName);
         }
     }
 }
