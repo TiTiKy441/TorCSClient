@@ -176,17 +176,21 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
             success &= _ndisapi.SetPacketEvent(_adapter.Handle, _packetEvent);
             success &= _ndisapi.SetAdapterMode(_adapter.Handle, Mode);
 
-            if (!success) _interceptingTask = Task.Factory.StartNew(FilterWork, _cancellationTokenSource.Token).ContinueWith(t =>
-            {
-                if (t.IsFaulted) Stop();
-            });
+            if (success) _interceptingTask = Task.Factory.StartNew(FilterWork, _cancellationTokenSource.Token).ContinueWith(t => { if (t.IsFaulted) Stop(); });
+            else Stop();
             return success;
         }
 
-        private void WaitForExit()
+        public void WaitForExit()
         {
             ThrowIfDisposed();
             _interceptingTask?.Wait();
+        }
+
+        public void WaitForExit(int msTimeout)
+        {
+            ThrowIfDisposed();
+            _interceptingTask?.Wait(msTimeout);
         }
 
         public virtual bool Stop()

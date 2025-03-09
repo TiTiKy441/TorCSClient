@@ -50,7 +50,7 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
         public static bool ResetMainAdapter()
         {
             NetworkAdapter mainAdapter = GetActiveAdapter();
-            return (!IsOccupied(mainAdapter)) && ndisapi.ResetPacketFilterTable() & ndisapi.SetAdapterMode(mainAdapter.Handle, 0) & ndisapi.SetPacketEvent(mainAdapter.Handle, null);
+            return (!IsOccupied(mainAdapter)) && (ndisapi.ResetPacketFilterTable() & ndisapi.SetAdapterMode(mainAdapter.Handle, 0) & ndisapi.SetPacketEvent(mainAdapter.Handle, null));
         }
 
         // TODO: REDO

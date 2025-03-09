@@ -32,12 +32,7 @@ namespace TorCSClient.GUI
 
             filter_type_combobox.SelectedIndex = Configuration.Instance.GetInt("NetworkFilterType");
             use_dns_checkbox.Checked = Configuration.Instance.GetFlag("UseTorDNS");
-            proxifyre_apps.BeginUpdate();
-            foreach (string exe in ProxiFyreService.Instance.GetApps())
-            {
-                AddAppToProxiFyreList(exe);
-            }
-            proxifyre_apps.EndUpdate();
+            AddAppsToProxiFyreList(ProxiFyreService.Instance.GetApps());
             ProxiFyreService.Instance.OnStartRequested += ProxiFyre_OnStartRequested;
         }
 
@@ -81,9 +76,7 @@ namespace TorCSClient.GUI
                     var fileStream = openFileDialog.OpenFile();
                 }
             }
-            proxifyre_apps.BeginUpdate();
-            filePaths.ToList().ForEach(file => AddAppToProxiFyreList(file));
-            proxifyre_apps.EndUpdate();
+            AddAppsToProxiFyreList(filePaths);
             UpdateProxiFyreList();
         }
 
@@ -100,6 +93,16 @@ namespace TorCSClient.GUI
             if (!MainListener.IsEnabled) return;
             MainListener.EnableTor(false);
             MainListener.EnableTor(true);
+        }
+
+        private void AddAppsToProxiFyreList(string[] apps)
+        {
+            proxifyre_apps.BeginUpdate();
+            foreach (string app in apps)
+            {
+                AddAppToProxiFyreList(app);
+            }
+            proxifyre_apps.EndUpdate();
         }
 
         private void AddAppToProxiFyreList(string pathToApp)
