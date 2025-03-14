@@ -1,6 +1,9 @@
 # TorCSClient
 Windows torifier. Provides UI to work with tor and to use it with your system. Contains all necessary functionality to torify. Installs [WinpkFilter](https://github.com/wiresock/ndisapi) to your system to ensure that only tor traffic leaves the system in "Everything" mode. Additionally provides basic anti-circumvention functionality and application selection (similar to orbot) (uses [ProxiFyre](https://github.com/wiresock/proxifyre)). 
 
+# Disclaimer
+This application should not be treated as anonymity tool. 
+
 ## Platforms
 Tested and developed on win10 64
 
