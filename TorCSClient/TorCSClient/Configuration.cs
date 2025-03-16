@@ -2,6 +2,7 @@
 
 namespace TorCSClient
 {
+    // Why did I write my own configuration? Cause I can? Yea, probably because of that, also, it sucks
     internal sealed class Configuration
     {
 
@@ -25,17 +26,10 @@ namespace TorCSClient
             {
                 "DefaultBridges", new string[]
                 {
-                    "obfs4 5.9.70.38:9002 F33AD3B1655C0D1FC13B455FCFC9704384086CE0 cert=4TO12+5smChHZG2sVBpDAI/rvYwLVai+A4ljNXLG5rlvrL/LoJ5vfXdVEkBjwJBzL1E6Og iat-mode=0",
-                    "obfs4 212.21.66.21:40425 363E9725C18A67E86D4978EF6AE3B4C50DFC9B55 cert=L1wlC3DNi60m/+JxA/FRqTIpICp/2etDdZKDManMQhBDg/WS577C9K3I8gGNN6Uc5r9qVw iat-mode=0",
-                    "obfs4 212.21.66.66:20621 986E06A61EC62DC0DD58E0A1BB6EE54463EF408A cert=ifbMX0EZ6eqTfCuyiiR0LDEZVX2UVGHEFvqbu5qb6wCZELi5WYhEEWIIBek5MSvyTQx3CA iat-mode=0",
-                    "obfs4 212.21.66.73:35401 C36F8D3C481910ED7A34F5ECEBE1C7C9A258F4A8 cert=9IygPQi2UKJ6pUjYTHl8ltg1cuPDvcsE9Os9TPVSioR0qmXU/0uSvD3rsm3jskV1nupJAg iat-mode=0",
-                    "obfs4 5.9.122.242:20132 A0329253C08BAA072F923BF00F2E9CEBBE0B0162 cert=nfmTZXNl2FDOG7xK1cFxB6NfOGiUQQBrrPgphV9afzXvj+s+b+e5uOBfIuUh5gWNbnp7Gg iat-mode=0",
-                    "obfs4 5.9.140.196:54444 F3037FFB92C3E7F11D1D8C5DCD744C10C09AE4D6 cert=ymd54jE/rwsNkYm2bmGRqAzb/U2mrpitnR3CZsxKcw1Dm2CFzNa1q6UoYfizVvub+6vBFA iat-mode=0",
-                    "webtunnel [2001:db8:8c19:9032:a7d3:bdb9:1795:1f63]:443 2A815E6A368C4B5B0AE0E31967DBCE186855F501 url=https://www.iplease.top/l4t795ZBZTh8iHbK5Aba70TT ver=0.0.1",
-                    "webtunnel [2001:db8:4dce:3e6b:32a3:a054:788c:d7f0]:443 339281F7912780D8A7FB118A48A65FFBF92F043F url=https://mwumba.com/9f2jjnAR9LR1fInBy60tbS57 ver=0.0.1",
-                    "webtunnel [2001:db8:3c2a:2d1c:6e06:549c:72ac:bfc0]:443 5F55B60FF2AEA996B5109BC338FC5F2BCA696F52 url=https://cloudstreamingcdn.website/Iej1bootoo9ef4A ver=0.0.1",
-                    "webtunnel [2001:db8:1fc0:eebe:5e6e:d6ee:f53e:6889]:443 4A3859C089DF40A4FFADC10A79DFEBE4F8272535 url=https://verry.org/K2A2utQIMou4Ia2WjVseyDjV ver=0.0.1",
-                    "webtunnel [2001:db8:8d54:8d31:43e8:80aa:bca:24ca]:443 447BBCEB9662D3FA3133199BF47A3D4CAB2D627C url=https://gitwizardry.pw/ThieLe5Ein0luofief7o ver=0.0.1",
+                    "webtunnel [2001:db8:345b:f823:7fe0:dec9:ee74:7525]:443 98A44ED60781F69A41B3CB4DCBA5ECE70D0AF247 url=https://b.img-cdn.net/3DV2SZvE8CrQ/ ver=0.0.1",
+                    "webtunnel [2001:db8:2e6a:63f2:456a:1cc0:690e:d78d]:443 C05C827E5A85ACAE4CD73A8A5C0FA1E8EDFA4FAD url=https://arinalee.amelia.ec/apache ver=0.0.1",
+                    "obfs4 150.230.148.45:9056 8A7782444203DA59602A121F975C016C015A3018 cert=swvtQzIePhZsjSc1Dq8dYNspVgs6Mfedeq+/+lssvhNN/LUcwp4y4WsQJJTh35BJj3ErVw iat-mode=0",
+                    "obfs4 23.92.19.8:999 9C181BFF7D3FA7C5BCE2D1E7031F8334DDC08FC7 cert=e2gza7BCBelieFMEBRp8Et0urJJwki73SikBNfw830cxgVxEUOdOegYuXH2LjVB3M6ZSKA iat-mode=0",
                 }
             },
 

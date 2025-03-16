@@ -255,9 +255,9 @@ namespace TorCSClient.GUI
             use_proxy_button.Checked = false;
             TorService.Instance.OnStartupStatusChange -= TorService_OnStartupStatusChange;
             TorService.Instance.OnStatusChange -= TorService_OnStatusChange;
-            TorControl.Instance.UnhookFromTorService();
-            TorService.Instance.StopTor(true); // Forced shutdown
-            TorService.Instance.WaitForEnd();
+            //TorControl.Instance.UnhookFromTorService();
+            //TorService.Instance.StopTor(true); // Forced shutdown
+            //TorService.Instance.WaitForEnd();
 
             Application.Exit();
             Environment.Exit(0); // Dont touch...

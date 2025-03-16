@@ -6,7 +6,6 @@ using NdisApi;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.NetworkInformation;
-using TorCSClient.Network;
 using System.Runtime.InteropServices;
 
 namespace TorCSClient
@@ -202,14 +201,6 @@ namespace TorCSClient
                 Utils.ShowConsole();
 
                 Console.WriteLine("WinpkFilter driver is not found!");
-
-                if (!Utils.IsAdministrator())
-                {
-                    Console.WriteLine("If you want to install WinpkFilter automatically, run program as admin");
-                    Console.ReadKey();
-                    Console.WriteLine("Press any key to exit...");
-                    Environment.Exit(255);
-                }
 
                 Console.WriteLine("Windows packet filter driver is not loaded!");
                 Console.WriteLine("Trying to download and install windows packet filter ");

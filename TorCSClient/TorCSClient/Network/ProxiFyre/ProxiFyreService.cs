@@ -109,6 +109,8 @@ namespace TorCSClient.Network.ProxiFyre
                 success = _proxiFyreProcess.Start();
 
                 Console.WriteLine("ProxiFyre service launched [PID={0}]", _proxiFyreProcess.Id);
+                OnStart?.Invoke(this, EventArgs.Empty);
+                
                 _proxiFyreProcess?.WaitForExitAsync();
             }
             catch(Exception e)
@@ -116,7 +118,6 @@ namespace TorCSClient.Network.ProxiFyre
                 Console.WriteLine("ProxiFyre launch failed: {0}", e.Message);
                 _proxiFyreProcess = null;
             }
-            OnStart?.Invoke(this, EventArgs.Empty);
             return success;
         }
 

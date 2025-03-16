@@ -47,10 +47,10 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
             return _adapterUsers[adapter.Handle].Any(user => user.Capturing);
         }
 
-        public static bool ResetMainAdapter()
+        public static bool ResetMainAdapter(bool forced = false)
         {
             NetworkAdapter mainAdapter = GetActiveAdapter();
-            return (!IsOccupied(mainAdapter)) && (ndisapi.ResetPacketFilterTable() & ndisapi.SetAdapterMode(mainAdapter.Handle, 0) & ndisapi.SetPacketEvent(mainAdapter.Handle, null));
+            return ((!IsOccupied(mainAdapter)) || forced) && (ndisapi.ResetPacketFilterTable() & ndisapi.SetAdapterMode(mainAdapter.Handle, 0) & ndisapi.SetPacketEvent(mainAdapter.Handle, null));
         }
 
         // TODO: REDO
@@ -67,6 +67,7 @@ namespace WinNetworkUtilsCS.Network.WinpkFilter
             return ndisapi.GetTcpipBoundAdaptersInfo().Item2.First();
         }
 
+        // This is literally a copy of Utils.GetMainInterface()
         public static NetworkInterface GetMainInterface()
         {
             if (_cachedMainNetworkInterface != null) return _cachedMainNetworkInterface;

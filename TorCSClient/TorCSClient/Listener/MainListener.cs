@@ -1,11 +1,8 @@
 ﻿using Microsoft.Win32;
 using System.Net;
 using System.Runtime.InteropServices;
-using TorCSClient.Network;
 using TorCSClient.Network.ProxiFyre;
 using TorCSClient.Proxy;
-using TorCSClient.Proxy.Control;
-using TorCSClient.Relays;
 using WinNetworkUtilsCS.Network.WinpkFilter;
 using NdisApi;
 
@@ -17,7 +14,6 @@ namespace TorCSClient.Listener
      * 
      * It listens to the status changes of tor and adjusts firewall and other parameters accordingly to the configuration
      **/
-
     internal sealed class MainListener
     {
 
@@ -69,10 +65,9 @@ namespace TorCSClient.Listener
             ProxiFyreService.Instance.UpdateConfig();
             Utils.SetDNS(Configuration.Instance.Get("DefaultDNS").First());
             TorService.Instance.StopTor();
-            TorService.Instance.WaitForEnd();
-            TorService.KillTorProcess();
-            TorService.Instance.OnStatusChange -= TorService_OnStatusChange;
             _firewall?.Dispose(); // ? just in case program exits before TorServiceListener is initialized
+            NdisApiUser.ResetMainAdapter(true);
+            Unhook();
         }
 
         private static void TorService_OnStatusChange(object? sender, EventArgs e)
@@ -88,7 +83,6 @@ namespace TorCSClient.Listener
                     EnableTor(false);
                     // We allow DNS requests so that when we get Tor's addresses in use, we can resolve hostnames
                     // This is needed for webtunnel bridges
-                    //Utils.SetDNS(Configuration.Instance.Get("DefaultDNS").First());
                     _firewall.ChangeFilterParams(new IPAddress[] { Utils.GetDnsAddress() });
                     _firewall.ChangeFilterParams(TorService.Instance.GetUsedAddresses(true).ToArray()); 
                     break;

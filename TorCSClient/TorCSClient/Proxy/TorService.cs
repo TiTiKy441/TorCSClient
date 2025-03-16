@@ -176,7 +176,7 @@ namespace TorCSClient.Proxy
             }
             else
             {
-                foreach (Relay relay in RelayDistributor.Instance.RelayInfo.Relays)
+                foreach (Relay relay in RelayDistributor.Instance.GuardRelays)
                 {
                     addresses.AddRange(relay.GetAddresses());
                 }
@@ -323,11 +323,6 @@ namespace TorCSClient.Proxy
             StartupStatus = "Process started";
             char logType;
             string? line;
-            // TODO: Switch to Utils
-            Regex ipv4AddressSelector = new("(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)");
-            Regex ipv6AddressSelector = new("(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
-            Regex logTypeSelector = new("\\[(.*?)\\]");
-            Regex percentageSelector = new("(\\d+(\\.\\d+)?%)");
             _torProcess.OutputDataReceived +=  (s, e) =>
             {
                 try
@@ -336,13 +331,13 @@ namespace TorCSClient.Proxy
                     {
                         line = e.Data.ToString().ToUpper();
 
-                        logType = logTypeSelector.Match(line).Value[1];
+                        logType = Utils.SquareBracketsSelector.Match(line).Value[0];
 
                         OnNewMessage?.Invoke(this, new NewMessageEventArgs(line));
 
                         if (line.Contains("BOOTSTRAPPED") || line.Contains("STARTING"))
                         {
-                            StartupStatus = "Conn: " + percentageSelector.Match(line).Value;
+                            StartupStatus = "Conn: " + Utils.PercentageSelector.Match(line).Value;
                             Status = ProxyStatus.Starting;
                         }
                         if (line.Contains("DONE") && line.Contains("100%"))
@@ -353,7 +348,6 @@ namespace TorCSClient.Proxy
                         if (line.Contains("INTERRUPT: EXITING CLEANLY"))
                         {
                             Status = ProxyStatus.Disabled;
-                            //return;
                         }
 
                         string serveripv4;

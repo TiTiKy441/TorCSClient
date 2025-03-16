@@ -89,8 +89,8 @@ namespace TorCSClient.GUI
 
         private void TorControl_FormClosed(object? sender, FormClosedEventArgs e)
         {
-            UnhookFromTorService();
             RelayScanner.StopScan();
+            UnhookFromTorService();
         }
 
         public void UnhookFromTorService()
