@@ -8,7 +8,7 @@ This application should not be treated as anonymity tool.
 Tested and developed on win10 64
 
 ## Platform
-[.NET 7.0](https://dotnet.microsoft.com/download/dotnet/7.0)
+[.NET 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
 
 ## Used projects
 Tor
