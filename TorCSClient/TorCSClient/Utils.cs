@@ -1,14 +1,9 @@
-﻿using System.CodeDom.Compiler;
-using System.Collections.Immutable;
-using System.Management;
+﻿using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Policy;
 using System.Security.Principal;
 using System.Text.RegularExpressions;
-using System.Xml.XPath;
 using TorCSClient.Network;
 
 namespace TorCSClient
@@ -99,49 +94,19 @@ namespace TorCSClient
             }
         }
 
+        /**
         public async static Task DownloadToFileAsync(string url, string fileName)
         {
             using Stream s = await _httpClient.GetStreamAsync(url);
             using FileStream fs = new(fileName, FileMode.OpenOrCreate);
             await s.CopyToAsync(fs);
         }
-
-        // TODO: redo
-        // I actually dont know how to properly do it, maybe this should be a user input?
-        // The current filter is to get all working ethernet|wireless80211 adapters that are not vEthernet or VBox
-        // And then get the network interface with the most bytes received
-        public static NetworkInterface GetMainInterface()
-        {
-            if (_cachedMainNetworkInterface != null) return _cachedMainNetworkInterface;
-            _cachedMainNetworkInterface = NetworkInterface.GetAllNetworkInterfaces().Where(x => x.OperationalStatus == OperationalStatus.Up
-                && !x.IsReceiveOnly
-                && (x.NetworkInterfaceType == NetworkInterfaceType.Ethernet || x.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
-                && !x.Name.StartsWith("vEthernet")
-                && !x.Description.StartsWith("VirtualBox"))
-                .OrderByDescending(x => x.GetIPStatistics().BytesReceived)
-                .First();
-            return _cachedMainNetworkInterface;
-        }
-
-        public static IPAddress GetMainInterfaceAddress()
-        {
-            return GetMainInterface().GetIPProperties().UnicastAddresses.Last().Address;
-        }
-
-        public static IPAddress GetDnsAddress()
-        {
-            return GetMainInterface().GetIPProperties().DnsAddresses.First();
-        }
-
-        public static NetworkInterface[] GetActiveInterfaces()
-        {
-            return NetworkInterface.GetAllNetworkInterfaces().Where(x => x.OperationalStatus == OperationalStatus.Up).ToArray();
-        }
+        **/
 
         public static void SetDNS(string newDNSServer)
         {
             string[] Dns = { newDNSServer, newDNSServer, newDNSServer };
-            NetworkInterface CurrentInterface = GetMainInterface();
+            NetworkInterface CurrentInterface = CachedNetworkInformation.Shared.MainNetworkInterface;
             if (CurrentInterface == null) return;
 
             ManagementBaseObject objdns;

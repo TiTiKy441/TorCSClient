@@ -1,10 +1,6 @@
-﻿using NdisApi;
-using System.Diagnostics;
-using System.Net;
+﻿using System.Diagnostics;
 using System.Text.Json;
 using TorCSClient.Proxy;
-using TorCSClient.Relays;
-using WinNetworkUtilsCS.Network.WinpkFilter;
 
 namespace TorCSClient.Network.ProxiFyre
 {
@@ -55,6 +51,7 @@ namespace TorCSClient.Network.ProxiFyre
 
         private ProxiFyreService()
         {
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
             if (File.Exists(Paths["app-config"]))
             {
                 using (FileStream stream = File.OpenRead(Paths["app-config"])) Config = JsonDocument.Parse(stream).Deserialize<ProxiFyreConfig>();
@@ -80,14 +77,19 @@ namespace TorCSClient.Network.ProxiFyre
             }
         }
 
-        public bool Start()
+        private void CurrentDomain_ProcessExit(object? sender, EventArgs e)
+        {
+            UpdateConfig();
+        }
+
+        public bool Start(bool proxyfiAllApps = false)
         {
             OnStartRequested?.Invoke(this, EventArgs.Empty);
             bool success = false;
             try
             {
                 if (IsRunning) return false;
-                UpdateConfig();
+                UpdateConfig(proxyfiAllApps);
                 _proxiFyreProcess = new Process()
                 {
                     StartInfo = new ProcessStartInfo()
@@ -131,10 +133,20 @@ namespace TorCSClient.Network.ProxiFyre
             }
         }
 
-        public void UpdateConfig()
+        public void UpdateConfig(bool proxyfiAllApps = false)
         {
             if (IsRunning) throw new InvalidOperationException("Cant update ProxiFyre config while ProxiFyre is running");
-            File.WriteAllText(Paths["app-config"], JsonSerializer.Serialize(Config));
+            if (proxyfiAllApps)
+            {
+                string[] apps = GetApps();
+                SetApps(Array.Empty<string>());
+                File.WriteAllText(Paths["app-config"], JsonSerializer.Serialize(Config));
+                SetApps(apps);
+            }
+            else
+            {
+                File.WriteAllText(Paths["app-config"], JsonSerializer.Serialize(Config));
+            }
         }
 
         public string[] GetApps()

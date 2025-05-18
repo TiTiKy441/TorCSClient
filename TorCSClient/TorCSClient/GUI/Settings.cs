@@ -88,7 +88,7 @@ namespace TorCSClient.GUI
             UpdateProxiFyreList();
         }
 
-        private void ReloadTor()
+        private void ReloadSettings()
         {
             if (!MainListener.IsEnabled) return;
             MainListener.EnableTor(false);
@@ -100,7 +100,7 @@ namespace TorCSClient.GUI
             proxifyre_apps.BeginUpdate();
             foreach (string app in apps)
             {
-                AddAppToProxiFyreList(app);
+                if (File.Exists(app)) AddAppToProxiFyreList(app);
             }
             proxifyre_apps.EndUpdate();
         }
@@ -126,7 +126,7 @@ namespace TorCSClient.GUI
             {
                 ProxiFyreService.Instance.SetApps(newApps);
                 proxifyre_apps.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
-                if (reloadTor) ReloadTor();
+                if (reloadTor) ReloadSettings();
             }
         }
 
@@ -146,23 +146,18 @@ namespace TorCSClient.GUI
                 use_dns_checkbox.Checked = false;
             }
             Configuration.Instance.SetFlag("UseTorDNS", use_dns_checkbox.Checked);
-            ReloadTor();
+            ReloadSettings();
         }
 
         private void filter_type_combobox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (filter_type_combobox.SelectedIndex == 1)
-            {
-                Configuration.Instance.SetFlag("UseTorAsSystemProxy", false);
-            }
             if (filter_type_combobox.SelectedIndex == 0)
             {
                 use_dns_checkbox.Checked = true;
-                Configuration.Instance.SetFlag("UseTorAsSystemProxy", true);
                 Configuration.Instance.SetFlag("UseTorDNS", true);
             }
             Configuration.Instance.SetInt("NetworkFilterType", filter_type_combobox.SelectedIndex);
-            ReloadTor();
+            ReloadSettings();
         }
     }
 }

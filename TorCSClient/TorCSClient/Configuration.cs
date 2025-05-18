@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using TorCSClient.Network;
 
 namespace TorCSClient
 {
@@ -69,17 +70,10 @@ namespace TorCSClient
             },
 
             {
-                "UseTorAsSystemProxy", new string[]
-                {
-                    "1"
-                }
-            },
-
-            {
                 // Default DNS server, sets DNS to this server if the tor dns is not used
                 "DefaultDNS", new string[]
                 {
-                    Utils.GetDnsAddress().ToString()
+                    CachedNetworkInformation.Shared.MainNetworkInterface.GetIPProperties().DnsAddresses.First().ToString(),
                 }
             },
 
@@ -164,6 +158,13 @@ namespace TorCSClient
                 "TorDirectory", new string[]
                 {
                     Path.GetFullPath(AppContext.BaseDirectory + @"\tor\"),
+                }
+            },
+
+            {
+                "WebtunnelDNSQueryTimeout", new string[]
+                {
+                    "3000" // milliseconds
                 }
             }
         };

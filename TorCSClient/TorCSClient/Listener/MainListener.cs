@@ -3,8 +3,10 @@ using System.Net;
 using System.Runtime.InteropServices;
 using TorCSClient.Network.ProxiFyre;
 using TorCSClient.Proxy;
-using WinNetworkUtilsCS.Network.WinpkFilter;
+using TorCSClient.Network.WinpkFilter;
+using TorCSClient.Network;
 using NdisApi;
+using System.Net.NetworkInformation;
 
 namespace TorCSClient.Listener
 {
@@ -29,13 +31,11 @@ namespace TorCSClient.Listener
         private const string subkey = "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings";
         private const string keyName = userRoot + "\\" + subkey;
 
-        private static NetworkIPFilter _firewall;
 
         public static void Initialize()
         {
             Hook();
-            _firewall = new NetworkIPFilter(Array.Empty<IPAddress>(), StaticFilter.FILTER_PACKET_ACTION.FILTER_PACKET_PASS, StaticFilter.FILTER_PACKET_ACTION.FILTER_PACKET_DROP);
-            if (Configuration.Instance.GetFlag("ConstantFirewall")) _firewall.Start();
+            if (Configuration.Instance.GetFlag("ConstantFirewall")) Firewall.Apply();
         }
 
         public static void Hook()
@@ -43,13 +43,8 @@ namespace TorCSClient.Listener
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
             TorService.Instance.OnStatusChange += TorService_OnStatusChange;
             ProxiFyreService.Instance.OnExit += ProxiFyre_OnExit;
-        }
-
-        private static void ProxiFyre_OnExit(object? sender, EventArgs e)
-        {
-            // Since ProxiFyre uses ndisapi, if it's terminated ungracefully, it wil leave the network adapter in Tunneling state
-            // By resetting the main adapter, we are making sure that it's okay
-            NdisApiUser.ResetMainAdapter();
+            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
         }
 
         public static void Unhook()
@@ -57,16 +52,45 @@ namespace TorCSClient.Listener
             AppDomain.CurrentDomain.ProcessExit -= CurrentDomain_ProcessExit;
             TorService.Instance.OnStatusChange -= TorService_OnStatusChange;
             ProxiFyreService.Instance.OnExit -= ProxiFyre_OnExit;
+            NetworkChange.NetworkAddressChanged -= NetworkChange_NetworkAddressChanged;
+            NetworkChange.NetworkAvailabilityChanged -= NetworkChange_NetworkAvailabilityChanged;
+        }
+
+        private static void NetworkChange_NetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
+        {
+            Console.WriteLine("Network availability changed");
+            SetupFirewall();
+            if (IsEnabled)
+            {
+                EnableTor(false);
+                EnableTor(true);
+            }
+        }
+
+        private static void NetworkChange_NetworkAddressChanged(object? sender, EventArgs e)
+        {
+            Console.WriteLine("Network address changed");
+            SetupFirewall();
+            if (IsEnabled)
+            {
+                EnableTor(false);
+                EnableTor(true);
+            }
+        }
+
+        private static void ProxiFyre_OnExit(object? sender, EventArgs e)
+        {
+            // Since ProxiFyre uses ndisapi, if it's terminated ungracefully, it wil leave the network adapter in Tunneling state
+            // By resetting the main adapter, we are making sure that it's okay
+            Firewall.ResetMainAdapter();
         }
 
         private static void CurrentDomain_ProcessExit(object? sender, EventArgs e)
         {
             EnableTor(false);
-            ProxiFyreService.Instance.UpdateConfig();
             Utils.SetDNS(Configuration.Instance.Get("DefaultDNS").First());
             TorService.Instance.StopTor();
-            _firewall?.Dispose(); // ? just in case program exits before TorServiceListener is initialized
-            NdisApiUser.ResetMainAdapter(true);
+            Firewall.ResetMainAdapter();
             Unhook();
         }
 
@@ -77,35 +101,69 @@ namespace TorCSClient.Listener
                 case ProxyStatus.Disabled:
                     EnableTor(false);
                     Utils.SetDNS(Configuration.Instance.Get("DefaultDNS").First());
+                    Firewall.SetPassAddresses(Array.Empty<IPAddress>());
                     break;
 
                 case ProxyStatus.Starting:
                     EnableTor(false);
-                    // We allow DNS requests so that when we get Tor's addresses in use, we can resolve hostnames
-                    // This is needed for webtunnel bridges
-                    _firewall.ChangeFilterParams(new IPAddress[] { Utils.GetDnsAddress() });
-                    _firewall.ChangeFilterParams(TorService.Instance.GetUsedAddresses(true).ToArray()); 
+                    SetupFirewall();
                     break;
 
                 case ProxyStatus.Running:
-                    _firewall.ChangeFilterParams(TorService.Instance.GetUsedAddresses(true).ToArray());
                     if (Configuration.Instance.GetFlag("StartEnabled")) EnableTor(true);
                     break;
             }
+        }
+
+        private static void SetupFirewall()
+        {
+            // We allow DNS requests so that when we get Tor's addresses in use, we can resolve hostnames
+            // This is needed for webtunnel bridges
+            List<IPAddress> passed = new();
+
+            IPAddress[] dnsAddrs = CachedNetworkInformation.Shared.MainNetworkInterfaceIPProperties.DnsAddresses.ToArray();
+
+            passed.AddRange(dnsAddrs);
+            Firewall.SetPassAddresses(dnsAddrs);
+
+            IPAddress[] usedAddresses = TorService.Instance.GetUsedAddresses(true, Configuration.Instance.GetInt("WebtunnelDNSQueryTimeout")).ToArray();
+
+            passed.AddRange(usedAddresses);
+
+            Firewall.SetPassAddresses(passed);
+            Console.WriteLine("Firewall setup done");
         }
 
         public static bool EnableTor(bool enable)
         {
             if (enable)
             {
-                if (Configuration.Instance.GetFlag("UseTorAsSystemProxy")) EnableProxy(true);
-                if (Configuration.Instance.GetFlag("UseTorDNS")) Utils.SetDNS("127.0.0.1");
-                Utils.ReinitHttpClient("socks5://127.0.0.1:" + TorService.Instance.GetConfigurationValue("SocksPort").First());
-
-                if (Configuration.Instance.GetInt("NetworkFilterType") == 1) ProxiFyreService.Instance.Start();
-                if (Configuration.Instance.GetInt("NetworkFilterType") == 0 && _firewall != null && !_firewall.Capturing)
+                //Utils.ReinitHttpClient("socks5://127.0.0.1:" + TorService.Instance.GetConfigurationValue("SocksPort").First());
+                Utils.ReinitHttpClient("socks5://" + TorService.Instance.GetSocksEndPoint().ToString());
+                
+                if (Configuration.Instance.GetFlag("UseTorDNS")) Utils.SetDNS(IPAddress.Loopback.ToString());
+                
+                switch ((ProxificationType)Configuration.Instance.GetInt("NetworkFilterType"))
                 {
-                    if (!_firewall.Start()) return false;
+                    case ProxificationType.SystemProxy:
+                        EnableProxy(true);
+                        if (!Firewall.IsApplied)
+                        {
+                            if (!Firewall.Apply()) return false;
+                        }
+                        break;
+                    case ProxificationType.SelectedApps:
+                        EnableProxy(false);
+                        ProxiFyreService.Instance.Start();
+                        break;
+                    case ProxificationType.ProxifyreAll:
+                        EnableProxy(false);
+                        if (!Firewall.IsApplied)
+                        {
+                            if (!Firewall.Apply(addBaseFilters: false)) return false; 
+                        }
+                        ProxiFyreService.Instance.Start(true);
+                        break;
                 }
                 IsEnabled = true;
                 return true;
@@ -117,9 +175,9 @@ namespace TorCSClient.Listener
                 Utils.ReinitHttpClient(null);
 
                 ProxiFyreService.Instance.Stop();
-                if (_firewall != null && _firewall.Capturing && !Configuration.Instance.GetFlag("ConstantFirewall"))
+                if (Firewall.IsApplied && !Configuration.Instance.GetFlag("ConstantFirewall"))
                 { 
-                    if (!_firewall.Stop()) return false; 
+                    if (!Firewall.Stop()) return false; 
                 }
                 IsEnabled = false;
                 return true;
@@ -130,7 +188,8 @@ namespace TorCSClient.Listener
         {
             if (enable)
             {
-                Registry.SetValue(keyName, "ProxyServer", "socks=127.0.0.1:" + TorService.Instance.GetConfigurationValue("SocksPort").First());
+                //Registry.SetValue(keyName, "ProxyServer", "socks=127.0.0.1:" + TorService.Instance.GetConfigurationValue("SocksPort").First());
+                Registry.SetValue(keyName, "ProxyServer", "socks=" + TorService.Instance.GetSocksEndPoint().ToString());
                 Registry.SetValue(keyName, "ProxyEnable", 1, RegistryValueKind.DWord);
                 Registry.SetValue(keyName, "ProxyOverride", "");
             }

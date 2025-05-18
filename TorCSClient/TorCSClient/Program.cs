@@ -2,11 +2,11 @@
 using TorCSClient.Relays;
 using TorCSClient.GUI;
 using TorCSClient.Listener;
-using NdisApi;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using NdisApi;
 
 namespace TorCSClient
 {
@@ -106,17 +106,6 @@ namespace TorCSClient
                         //TODO: Error handling
                     }
                 }
-            }
-        }
-
-        private static void PrintNetworkInterfaces()
-        {
-            NetworkInterface main = Utils.GetMainInterface();
-            NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-            Console.WriteLine("List of network interfaces: ");
-            foreach (NetworkInterface netinterface in interfaces)
-            {
-                Console.WriteLine((netinterface.Id == main.Id ? "MAIN> " : "      ") + new string(netinterface.Id.Skip(1).Take(8).ToArray()) + "... " + netinterface.Name + " (" + netinterface.Description + ")"); 
             }
         }
 

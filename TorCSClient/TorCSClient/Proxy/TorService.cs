@@ -164,14 +164,37 @@ namespace TorCSClient.Proxy
             }
         }
 
-        public List<IPAddress> GetUsedAddresses(bool resolveDns = false)
+        public List<IPAddress> GetUsedAddresses(bool resolveDns = false, int timeout = 1000)
         {
             List<IPAddress> addresses = new();
             if (GetConfigurationValue("UseBridges").First() == "1")
             {
                 foreach (string bridgeLine in GetConfigurationValue("Bridge"))
                 {
-                    addresses.AddRange(Utils.GetAllIpAddressesFromString(bridgeLine, resolveDns));
+                    if (bridgeLine.StartsWith("webtunnel", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        foreach (Match urlMatch in Utils.UrlSelector.Matches(bridgeLine))
+                        {
+                            if (urlMatch.Success)
+                            {
+                                Task.Factory.StartNew(() =>
+                                {
+                                    try
+                                    {
+                                        IPAddress[] resolved = Dns.GetHostAddresses(new Uri(urlMatch.Value).Host);
+                                        addresses.AddRange(resolved);
+                                    }
+                                    catch (Exception)
+                                    {
+                                    }
+                                }).Wait(timeout);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        addresses.AddRange(Utils.GetAllIpAddressesFromString(bridgeLine));
+                    }
                 }
             }
             else
@@ -211,6 +234,26 @@ namespace TorCSClient.Proxy
         {
             if (!_torrcConfiguration.ContainsKey(key)) return Array.Empty<string>();
             return _torrcConfiguration[key];
+        }
+
+        public int GetSocksPort()
+        {
+            return Convert.ToInt32(GetConfigurationValue("SocksPort").First());
+        }
+
+        public IPEndPoint GetSocksEndPoint()
+        {
+            return new IPEndPoint(IPAddress.Loopback, GetSocksPort());
+        }
+
+        public int GetDNSPort()
+        {
+            return Convert.ToInt32(GetConfigurationValue("DNSPort").First());
+        }
+
+        public IPEndPoint GetDNSEndPoint()
+        {
+            return new IPEndPoint(IPAddress.Loopback, GetDNSPort());
         }
 
         public bool ExistsConfigurationValue(string key)

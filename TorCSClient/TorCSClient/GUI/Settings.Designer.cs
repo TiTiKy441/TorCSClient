@@ -56,7 +56,7 @@
             // 
             filter_type_combobox.DropDownStyle = ComboBoxStyle.DropDownList;
             filter_type_combobox.FormattingEnabled = true;
-            filter_type_combobox.Items.AddRange(new object[] { "Everything", "Selected apps" });
+            filter_type_combobox.Items.AddRange(new object[] { "Everything (System proxy)", "Selected apps (ProxiFyre)" });
             filter_type_combobox.Location = new Point(12, 39);
             filter_type_combobox.Name = "filter_type_combobox";
             filter_type_combobox.Size = new Size(363, 28);
