@@ -27,10 +27,10 @@ namespace TorCSClient
             {
                 "DefaultBridges", new string[]
                 {
-                    "webtunnel [2001:db8:345b:f823:7fe0:dec9:ee74:7525]:443 98A44ED60781F69A41B3CB4DCBA5ECE70D0AF247 url=https://b.img-cdn.net/3DV2SZvE8CrQ/ ver=0.0.1",
-                    "webtunnel [2001:db8:2e6a:63f2:456a:1cc0:690e:d78d]:443 C05C827E5A85ACAE4CD73A8A5C0FA1E8EDFA4FAD url=https://arinalee.amelia.ec/apache ver=0.0.1",
-                    "obfs4 150.230.148.45:9056 8A7782444203DA59602A121F975C016C015A3018 cert=swvtQzIePhZsjSc1Dq8dYNspVgs6Mfedeq+/+lssvhNN/LUcwp4y4WsQJJTh35BJj3ErVw iat-mode=0",
-                    "obfs4 23.92.19.8:999 9C181BFF7D3FA7C5BCE2D1E7031F8334DDC08FC7 cert=e2gza7BCBelieFMEBRp8Et0urJJwki73SikBNfw830cxgVxEUOdOegYuXH2LjVB3M6ZSKA iat-mode=0",
+                    "webtunnel [2001:db8:12ff:2d55:9130:36a7:c49b:d1f4]:443 933C998EC827D1C17CC93D1292BBC41735867CF8 url=https://x7t2qctb.xoomlia.com/qzxrtfmu/ ver=0.0.1",
+                    "webtunnel [2001:db8:cb62:8f57:5a43:d9d0:a488:27e2]:443 16D0EF186DA080CE7A4968072920E08CA7729AED url=https://distributedcontent.website/ahxabaic5Opheir ver=0.0.1",
+                    "obfs4 94.103.188.53:443 BFD5F83BE97EEAF8B3B8505B036ED7BB8A91E850 cert=Z0esGc0eTMaBA8c2ofxwuDP4sYF1U0Hd7IQA4XGv7Hyyic2hlFf0FXM2xowDA3HPUiixEg iat-mode=0",
+                    "obfs4 163.172.69.160:9002 C5CC10D891A5333F28163C8840E6B2283E5C24A9 cert=zoL9pygPmz5TvZN23qiVbwSgW0tMvwSQ9Rqe5upmFad8HqJq+IX66TZmKAFpFUWf3lqcDw iat-mode=0",
                 }
             },
 
@@ -42,7 +42,7 @@ namespace TorCSClient
             },
 
             {
-                "RelayMirrors", new string[1]
+                "RelayMirrors", new string[]
                 {
                     "https://github.com/ValdikSS/tor-onionoo-mirror/blob/master/details-full.json?raw=true",
                 }
@@ -167,6 +167,7 @@ namespace TorCSClient
                     "3000" // milliseconds
                 }
             }
+            // AdditionalTorrcConfiguration
         };
 
         private Configuration(string configFile)

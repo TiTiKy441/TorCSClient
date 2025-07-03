@@ -34,7 +34,7 @@ namespace TorCSClient.Network.ProxiFyre
             {
                 try
                 {
-                    return _proxiFyreProcess != null && !_proxiFyreProcess.HasExited;
+                    return (_proxiFyreProcess != null) && (!_proxiFyreProcess.HasExited);
                 }
                 catch (InvalidOperationException)
                 {

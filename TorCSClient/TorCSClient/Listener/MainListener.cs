@@ -5,7 +5,6 @@ using TorCSClient.Network.ProxiFyre;
 using TorCSClient.Proxy;
 using TorCSClient.Network.WinpkFilter;
 using TorCSClient.Network;
-using NdisApi;
 using System.Net.NetworkInformation;
 
 namespace TorCSClient.Listener

@@ -15,7 +15,7 @@ namespace TorCSClient.Network.WinpkFilter
 
         private static NetworkAdapter _adapter = GetActiveAdapter();
 
-        public static StaticFilter.FILTER_PACKET_ACTION GlobalAction { get; private set; } = FILTER_PACKET_ACTION.FILTER_PACKET_DROP;
+        public static FILTER_PACKET_ACTION GlobalAction { get; private set; } = FILTER_PACKET_ACTION.FILTER_PACKET_DROP;
 
         public static void CloseAndDisposeNdisapi()
         {

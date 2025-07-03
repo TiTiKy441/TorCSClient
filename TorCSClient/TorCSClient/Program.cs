@@ -4,9 +4,9 @@ using TorCSClient.GUI;
 using TorCSClient.Listener;
 using System.Diagnostics;
 using System.IO.Compression;
-using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using NdisApi;
+using TorCSClient.Network;
 
 namespace TorCSClient
 {

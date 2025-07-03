@@ -1,11 +1,7 @@
 ﻿using System.Text;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using Microsoft.Win32;
 using TorCSClient.Proxy.Control;
-using System.Diagnostics.Eventing.Reader;
-using System.DirectoryServices.ActiveDirectory;
 using System.Net;
 using TorCSClient.Relays;
 

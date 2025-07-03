@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Net.NetworkInformation;
+using System.Buffers;
 
 namespace TorCSClient.Network
 {
@@ -122,9 +123,9 @@ namespace TorCSClient.Network
 
         #region SendARP()
 
-        public static byte[] SendARP(uint destionationAddress, uint sourceAddress = 0)
+        public static byte[] SendARP(uint destionationAddress, uint sourceAddress = 0, int physicalAddressSize = 6)
         {
-            byte[] physicalAddress = new byte[6];
+            byte[] physicalAddress = new byte[physicalAddressSize];
             int addressLength = physicalAddress.Length;
             uint errorCode = SendARP(destionationAddress, sourceAddress, physicalAddress, ref addressLength);
             HandleErrorCode(errorCode);
@@ -134,20 +135,18 @@ namespace TorCSClient.Network
         /// <summary>
         /// Send Address Resolution Protocol (ARP) packet to resolve the physical address of the device with the desired ipv4 address in the local network.
         /// If the ARP entry exists in the ARP table on the local device, returns the target address, otherwise sends resolution packet.
-        /// Supports only IPV4
+        /// IMPORTANT: Supports only IPv4
         /// </summary>
         /// <param name="destAddress">Ip address to be resolved</param>
         /// <param name="srcAddress">Network interface ip address, if set to null, would automatically resolve from the main interface</param>
         /// <returns>Resolved physical address</returns>
-        public static PhysicalAddress SendARP(IPAddress destAddress, IPAddress? srcAddress = null)
+        public static PhysicalAddress SendARP(IPAddress destAddress, IPAddress? srcAddress = null, int physicalAddressSize = 6)
         {
-            byte[] physicalAddress = new byte[6];
-            int addressLength = physicalAddress.Length;
+            // Do not check if addresses are IPv4 since GetIPV4AddressUint would throw an exception if not IPv4 address was passed to it
             uint destionationAddress = GetIPV4AddressUint(destAddress);
-            uint sourceAddress = srcAddress == null ? 0 : GetIPV4AddressUint(srcAddress);
-            uint errorCode = SendARP(destionationAddress, sourceAddress, physicalAddress, ref addressLength);
-            HandleErrorCode(errorCode);
-            return new PhysicalAddress(physicalAddress);
+            uint sourceAddress = ((srcAddress == null) ? 0 : GetIPV4AddressUint(srcAddress));
+
+            return new PhysicalAddress(SendARP(destionationAddress, sourceAddress, physicalAddressSize));
         }
 
         #endregion
@@ -260,32 +259,36 @@ namespace TorCSClient.Network
         }
     }
 
+    /// <summary>
+    /// Provides span bit conversions with indexes (BitConverter doesnt support indexes)
+    /// I am not sure how should it be done properly, maybe extension?
+    /// </summary>
     internal sealed class SpanBitConverter
     {
 
         public static int ToInt32<TFrom>(Span<TFrom> span, int index = 0)
             where TFrom : struct
         {
-            return CastToSingle<TFrom, Int32>(span, sizeof(Int32), index);
+            return MemoryMarshal.Cast<TFrom, int>(span.Slice(index, sizeof(Int32)))[0];//CastToSingle<TFrom, Int32>(span, sizeof(Int32), index);
         }
 
         public static long ToInt64<TFrom>(Span<TFrom> span, int index = 0)
             where TFrom : struct
         {
-            return CastToSingle<TFrom, Int64>(span, sizeof(Int64), index);
+            return MemoryMarshal.Cast<TFrom, long>(span.Slice(index, sizeof(Int64)))[0];//CastToSingle<TFrom, Int64>(span, sizeof(Int64), index);
         }
 
         public static uint ToUInt32<TFrom>(Span<TFrom> span, int index = 0)
             where TFrom : struct
         {
-            return CastToSingle<TFrom, UInt32>(span, sizeof(UInt32), index);
+            return MemoryMarshal.Cast<TFrom, uint>(span.Slice(index, sizeof(UInt32)))[0];//CastToSingle<TFrom, UInt32>(span, sizeof(UInt32), index);
         }
 
         public static TTo CastToSingle<TFrom, TTo>(Span<TFrom> span, int size, int index = 0)
             where TFrom : struct
             where TTo : struct
         {
-            return MemoryMarshal.Cast<TFrom, TTo>(span.Slice(index, index + size))[0];
+            return MemoryMarshal.Cast<TFrom, TTo>(span.Slice(index, size))[0];
         }
     }
 }
