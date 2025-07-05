@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Text;
+using System.Text.RegularExpressions;
 using TorCSClient.Proxy;
 using TorCSClient.Relays;
 
@@ -222,6 +223,7 @@ namespace TorCSClient.GUI
             if (use_bridges_checkbox.Checked)
             {
                 List<string> pulledBridges = bridges_list_textbox.Lines.ToList();
+                List<string> preparedBridges = new();
                 List<string> finalBridges = new();
                 int index;
                 using (HttpClient client = new())
@@ -261,16 +263,19 @@ namespace TorCSClient.GUI
                     }
                     connect_button.Enabled = true;
                 }
+
+                // First parse
                 foreach (string bridgeLine in pulledBridges)
                 {
                     if (bridgeLine.StartsWith("Bridge"))
                     {
-                        finalBridges.Add(bridgeLine.Split(" ", 2)[1].Trim());
+                        preparedBridges.Add(bridgeLine.Split(" ", 2)[1].Trim());
                     }
                     if (Utils.GetAllIpAddressesFromString(bridgeLine, false).Length != 0)
                     {
-                        finalBridges.Add(bridgeLine.Trim());
+                        preparedBridges.Add(bridgeLine.Trim());
                     }
+
                     /**
                     if (bridgeLine.StartsWith("obfs4"))
                     {
@@ -284,6 +289,29 @@ namespace TorCSClient.GUI
                     }
                     **/
                 }
+                string? serverName = Configuration.Instance.Get("WebtunnelServernameParameter").Length == 0 ? null : Configuration.Instance.Get("WebtunnelServernameParameter")[0];
+                // Final preparation
+                foreach (string bridgeLine in preparedBridges)
+                {
+                    string prep = bridgeLine;
+                    if (bridgeLine.StartsWith("webtunnel"))
+                    {
+                        if (serverName != null)
+                        {
+                            if (bridgeLine.Contains("servername="))
+                            {
+                                // Skip, we dont replace
+                                //prep = Regex.Replace(bridgeLine, "(servername)=\\d+", "servername=" + serverName);
+                            }
+                            else
+                            {
+                                prep += " servername=" + serverName;
+                            }
+                        }
+                    }
+                    finalBridges.Add(prep);
+                }
+
                 Utils.Random.Shuffle(finalBridges);
 
                 switch (bridge_type_combobox.SelectedIndex)

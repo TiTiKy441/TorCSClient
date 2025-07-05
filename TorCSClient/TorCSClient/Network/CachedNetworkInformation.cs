@@ -16,8 +16,14 @@ namespace TorCSClient.Network
             {
                 if (_changeCachedMainNetworkInterface)
                 {
-                    _cachedMainNetworkInterface = NetworkInformation.GetMainNetworkInterface();
-                    _changeCachedMainNetworkInterface = false;
+                    try
+                    {
+                        _cachedMainNetworkInterface = NetworkInformation.GetMainNetworkInterface();
+                        _changeCachedMainNetworkInterface = false;
+                    }catch(Exception ex)
+                    {
+                        Console.WriteLine("CachedNetworkInformation: Unable to update MainNetworkInterface: {0}", ex.Message);
+                    }
                 }
                 return _cachedMainNetworkInterface;
             }
@@ -25,16 +31,24 @@ namespace TorCSClient.Network
 
         private bool _changeCachedGatewayPhysicalAddress = false;
 
-        private PhysicalAddress? _cachedGatewayPhysicalAddress = null;
+        private PhysicalAddress _cachedGatewayPhysicalAddress = NetworkInformation.GetGatewayPhysicalAddress();
 
         public PhysicalAddress GatewayPhysicalAddress
         {
             get
             {
-                if (_changeCachedGatewayPhysicalAddress || (_cachedGatewayPhysicalAddress == null))
+                
+                if (_changeCachedGatewayPhysicalAddress)
                 {
-                    _cachedGatewayPhysicalAddress = NetworkInformation.GetGatewayPhysicalAddress();
-                    _changeCachedGatewayPhysicalAddress = false;
+                    try
+                    {
+                        _cachedGatewayPhysicalAddress = NetworkInformation.GetGatewayPhysicalAddress();
+                        _changeCachedGatewayPhysicalAddress = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("CachedNetworkInformation: Unable to update GatewayPhysicalAddress: {0}", ex.Message);
+                    }
                 }
                 return _cachedGatewayPhysicalAddress;
             }

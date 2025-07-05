@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Runtime.InteropServices;
 using NdisApi;
 using TorCSClient.Network;
+using System.Runtime.CompilerServices;
 
 namespace TorCSClient
 {
@@ -22,6 +23,7 @@ namespace TorCSClient
                 Console.WriteLine("this application requires to be run as administrator");
                 Console.WriteLine("Press any key to exit...");
                 Console.ReadKey();
+                return;
             }
 
             if (Configuration.Instance.GetFlag("HideConsole")) 
@@ -61,10 +63,29 @@ namespace TorCSClient
             }
 
             string[] cmd;
-            foreach (string customParameter in Configuration.Instance.Get("AdditionalTorrcConfiguration"))
+            Dictionary<string, string[]> overrides = new();
+            foreach (string overrideParameter in Configuration.Instance.Get("OverrideTorrcConfiguration"))
             {
-                cmd = customParameter.Split(" ", 2);
-                TorService.Instance.SetConfigurationValue(cmd[0], cmd[1], false);
+                cmd = overrideParameter.Split(" ", 2);
+                if (overrides.ContainsKey(cmd[0]))
+                {
+                    overrides[cmd[0]] = overrides[cmd[0]].ToList().Append(cmd[1]).ToArray();
+                }
+                else
+                {
+                    overrides.Add(cmd[0], new string[] { cmd[1] });
+                }
+            }
+
+            foreach (string overrideParameter in overrides.Keys)
+            {
+                TorService.Instance.SetConfigurationValue(overrideParameter, overrides[overrideParameter], false);
+            }
+
+            foreach (string additionalParameter in Configuration.Instance.Get("AdditionalTorrcConfiguration"))
+            {
+                cmd = additionalParameter.Split(" ", 2);
+                TorService.Instance.SetConfigurationValue(cmd[0], cmd[1], true);
                 Console.WriteLine("Overriding torrc parameter: " + cmd[0]);
             }
 

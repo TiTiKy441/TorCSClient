@@ -35,7 +35,7 @@ namespace TorCSClient
             },
 
             {
-                "RelayFile", new string[1]
+                "RelayFile", new string[]
                 {
                     Path.GetFullPath(AppContext.BaseDirectory + "details-full.json"),
                 }
@@ -166,8 +166,18 @@ namespace TorCSClient
                 {
                     "3000" // milliseconds
                 }
-            }
+            },
+
+            {
+                // If not defined does not override of add servername parameter
+                // If set, doesnt override servername parameter of the bridge if it already exists, but if it doesnt, overrides it
+                "WebtunnelServernameParameter", new string[]
+                {
+
+                }
+            },
             // AdditionalTorrcConfiguration
+            // OverrideTorrcConfiguration
         };
 
         private Configuration(string configFile)
@@ -238,6 +248,11 @@ namespace TorCSClient
         public void Set(string key, string value)
         {
             Set(key, new string[1] { value });
+        }
+
+        public bool Contains(string key)
+        {
+            return _configuration.ContainsKey(key);
         }
 
         public void Set(string key, string[] value, bool appendToEnd = false)
